@@ -19,19 +19,21 @@ export const App = () => {
   });
 
   const handleSubmit = (inputValue) => {
-    setQuery(inputValue)
-    setPage(1)
+    setQuery(inputValue);
+    setPage(1);
   };
+
   const onClickLoadMore = () => {
     setPage(page + 1);
+  };
 
-  }
   const onOpenModal = (modalData) => {
     setModal({
       isOpen: true,
       modalData: modalData,
     });
   };
+
   const onCloseModal = () => {
     setModal({
       isOpen: false,
@@ -41,54 +43,45 @@ export const App = () => {
 
   useEffect(() => {
     if (page === 1 && query === '') {
-      return
+      return;
     }
+
     const fetchPosts = async () => {
       try {
-        setIsLoading(true)
+        setIsLoading(true);
         const response = await requestPosts(query, page);
-        setPosts(prevPosts =>
+        setPosts((prevPosts) =>
           page > 1 ? [...prevPosts, ...response.hits] : response.hits
         );
       } catch (error) {
         setError(error.message);
-
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
+
     fetchPosts();
   }, [query, page]);
+
   return (
     <div>
       <Searchbar
         handleSubmit={handleSubmit}
-      />
+        inputValue={query} />
       <Loader
         loading={isLoading}
         error={error} />
       <ImageGallery
         posts={posts}
-        onOpenModal={onOpenModal}
-      />
+        onOpenModal={onOpenModal} />
       <ToastContainer />
       <Button
-        onClickLoadMore={onClickLoadMore}
-      />
+        onClickLoadMore={onClickLoadMore} />
       {modal.isOpen === true && (
         <Modal
           data={modal.modalData}
-          onCloseModal={onCloseModal}
-        />
+          onCloseModal={onCloseModal} />
       )}
     </div>
   );
-}
-
-
-
-
-
-
-
-
+};

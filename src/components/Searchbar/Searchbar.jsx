@@ -7,7 +7,7 @@ export const Searchbar = ({ handleSubmit }) => {
   const [inputValue, setInputValue] = useState('');
 
   const onInputChange = event => {
-    this.setState({ [event.target.name]: event.target.value });
+    setInputValue(event.target.value);
   };
 
   const onSubmit = event => {
@@ -32,7 +32,7 @@ export const Searchbar = ({ handleSubmit }) => {
             autoFocus
             placeholder="Search images and photos"
             onChange={onInputChange}
-            value={setInputValue}
+            value={inputValue}
             name='inputValue'
           />
         </form>
