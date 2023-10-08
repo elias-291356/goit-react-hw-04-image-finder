@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
@@ -6,104 +6,82 @@ import { Button } from './Button/Button';
 import { Modal } from './Modal/Modal';
 import { requestPosts } from 'services/api';
 import { Loader } from './Loader/Loader';
-export class App extends Component {
-  state = {
-    error: null,
-    posts: [],
-    query: '',
-    page: 1,
-    isLoading: false,
-    modal: {
+
+export const App = () => {
+  const [error, setError] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [modal, setModal] = useState({
+    isOpen: false,
+    modalData: null,
+  });
+
+  const handleSubmit = (inputValue) => {
+    setQuery(inputValue)
+    setPage(1)
+  };
+  const onClickLoadMore = () => {
+    setPage(page + 1);
+
+  }
+  const onOpenModal = (modalData) => {
+    setModal({
+      isOpen: true,
+      modalData: modalData,
+    });
+  };
+  const onCloseModal = () => {
+    setModal({
       isOpen: false,
       modalData: null,
-    },
-  }
-
-  fetchPosts = async () => {
-    try {
-      this.setState({
-        isLoading: true,
-      });
-
-      const response = await requestPosts(this.state.query, this.state.page);
-      console.log(response);
-      this.setState(prevState => ({
-        posts: this.state.page > 1 ? [...prevState.posts, ...response.hits] : response.hits,
-      }));
-    } catch (error) {
-      this.setState({ error: error.message });
-
-    } finally {
-      this.setState({
-        isLoading: false,
-
-      });
-    }
-  }
-
-  async componentDidUpdate(prevProps, prevState) {
-    if (prevState.query !== this.state.query || prevState.page !== this.state.page) {
-      this.fetchPosts()
-    }
-  }
-  handleSubmit = (inputValue) => {
-    this.setState({
-      query: inputValue,
-      page: 1,
-    })
+    });
   };
 
-  onClickLoadMore = () => {
-    this.setState({ page: this.state.page + 1 })
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setIsLoading(true)
+        const response = await requestPosts(query, page);
+        setPosts(prevPosts =>
+          page > 1 ? [...prevPosts, ...response.hits] : response.hits
+        );
+      } catch (error) {
+        setError(error.message);
 
-  }
-
-  onOpenModal = (modalData) => {
-    this.setState({
-      modal: {
-        isOpen: true,
-        modalData: modalData
+      } finally {
+        setIsLoading(false)
       }
-    })
-  }
-
-  onCloseModal = () => {
-    this.setState({
-      modal: {
-        isOpen: false,
-        modalData: null,
-      }
-    });
-  }
-
-  render() {
-    return (
-      <div>
-        <Searchbar
-          handleSubmit={this.handleSubmit}
+    }
+    fetchPosts();
+  }, [query, page]);
+  return (
+    <div>
+      <Searchbar
+        handleSubmit={handleSubmit}
+      />
+      <Loader
+        loading={isLoading}
+        error={error} />
+      <ImageGallery
+        posts={posts}
+        onOpenModal={onOpenModal}
+      />
+      <ToastContainer />
+      <Button
+        onClickLoadMore={onClickLoadMore}
+      />
+      {modal.isOpen === true && (
+        <Modal
+          data={modal.modalData}
+          onCloseModal={onCloseModal}
         />
-        <Loader
-          loading={this.state.isLoading}
-          error={this.state.error} />
-        <ImageGallery
-          posts={this.state.posts}
-          onOpenModal={this.onOpenModal}
-        />
-
-        <ToastContainer />
-        <Button
-          onClickLoadMore={this.onClickLoadMore}
-        />
-        {this.state.modal.isOpen === true && (
-          <Modal
-            data={this.state.modal.modalData}
-            onCloseModal={this.onCloseModal}
-          />
-        )}
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
 }
+
 
 
 
