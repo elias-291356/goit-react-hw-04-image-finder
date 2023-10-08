@@ -40,6 +40,9 @@ export const App = () => {
   };
 
   useEffect(() => {
+    if (page === 1 && query === '') {
+      return
+    }
     const fetchPosts = async () => {
       try {
         setIsLoading(true)
